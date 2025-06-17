@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+**/dist/
+**/build/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+
+# Coverage
+coverage/
+**/coverage/
+
+# Cache
+.cache/
+.vite/
+*.tsbuildinfo
+
+# Package lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
