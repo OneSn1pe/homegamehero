@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGame, useJoinGame, useUpdateChips, useAddRebuy, useEndGame } from '../hooks/useGame';
 import { useGameStore } from '../store/gameStore';
+import { useSocket } from '../hooks/useSocket';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -17,6 +18,9 @@ export const GameDashboard: React.FC = () => {
   const updateChips = useUpdateChips();
   const addRebuy = useAddRebuy();
   const endGame = useEndGame();
+  
+  // Connect to WebSocket for real-time updates
+  useSocket(code);
 
   const [joinName, setJoinName] = useState('');
   const [cashOutAmounts, setCashOutAmounts] = useState<Record<string, string>>({});

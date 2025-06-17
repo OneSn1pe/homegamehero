@@ -35,7 +35,8 @@ export const useGame = (code: string) => {
       return response.data;
     },
     enabled: !!code,
-    refetchInterval: 5000, // Poll every 5 seconds
+    // Remove polling - WebSocket will handle updates
+    refetchOnWindowFocus: true,
   });
 };
 

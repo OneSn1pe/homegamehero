@@ -3,18 +3,24 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import mongoSanitize from 'express-mongo-sanitize';
+import { createServer } from 'http';
 import { logger } from './utils/logger';
 import { connectDatabase } from './config';
 import routes from './routes';
 import { errorHandler } from './middleware/errorHandler';
 import { apiRateLimiter } from './middleware/rateLimiter';
 import { securityMiddleware } from './middleware/security';
+import { SocketService } from './services/socketService';
 
 // Load environment variables
 dotenv.config();
 
 const app: Express = express();
+const httpServer = createServer(app);
 const PORT = process.env['PORT'] || 3001;
+
+// Initialize Socket.IO
+export const socketService = new SocketService(httpServer);
 
 // Security middleware
 app.use(helmet());
@@ -44,9 +50,10 @@ const startServer = async () => {
     // Connect to MongoDB
     await connectDatabase();
     
-    // Start Express server
-    app.listen(PORT, () => {
+    // Start HTTP server with Socket.IO
+    httpServer.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);
+      logger.info('WebSocket server initialized');
     });
   } catch (error) {
     logger.error('Failed to start server:', error);

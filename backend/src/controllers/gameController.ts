@@ -3,6 +3,7 @@ import Game from '../models/Game';
 import { Player } from '../models/Player';
 import { AppError, asyncHandler } from '../middleware/errorHandler';
 import { generateLeaderToken } from '../middleware/auth';
+import { socketService } from '../index';
 import {
   CreateGameRequest,
   CreateGameResponse,
