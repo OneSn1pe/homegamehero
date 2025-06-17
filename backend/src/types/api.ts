@@ -38,6 +38,7 @@ export interface CreateGameResponse {
     }>;
     status: string;
     createdAt: Date;
+    leaderToken: string;
   };
 }
 

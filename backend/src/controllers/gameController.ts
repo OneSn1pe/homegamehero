@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Game from '../models/Game';
 import { Player } from '../models/Player';
 import { AppError, asyncHandler } from '../middleware/errorHandler';
+import { generateLeaderToken } from '../middleware/auth';
 import {
   CreateGameRequest,
   CreateGameResponse,
@@ -50,6 +51,13 @@ export const createGame = asyncHandler(
       status: 'waiting',
     });
 
+    // Generate leader token for the game creator
+    const leaderToken = generateLeaderToken(
+      game._id.toString(),
+      game.code,
+      game.hostName
+    );
+
     res.status(201).json({
       success: true,
       data: {
@@ -61,6 +69,7 @@ export const createGame = asyncHandler(
         blindStructure: game.blindStructure,
         status: game.status,
         createdAt: game.createdAt,
+        leaderToken,
       },
     });
   }
