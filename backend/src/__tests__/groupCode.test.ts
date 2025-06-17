@@ -1,8 +1,10 @@
-import { generateUniqueGroupCode, isValidGroupCode, formatGroupCode } from '../../utils/groupCode';
-import Game from '../../models/Game';
+import { generateUniqueGroupCode, isValidGroupCode, formatGroupCode } from '../utils/groupCode';
+import Game from '../models/Game';
 
 // Mock the Game model
-jest.mock('../../models/Game');
+jest.mock('../models/Game');
+
+const mockedGame = Game as jest.Mocked<typeof Game>;
 
 describe('Group Code Utilities', () => {
   beforeEach(() => {
@@ -12,7 +14,7 @@ describe('Group Code Utilities', () => {
   describe('generateUniqueGroupCode', () => {
     it('should generate a 6-character uppercase code', async () => {
       // Mock findByGroupCode to return null (code doesn't exist)
-      (Game.findByGroupCode as jest.Mock).mockResolvedValue(null);
+      (mockedGame.findByGroupCode as any) = jest.fn().mockResolvedValue(null);
 
       const code = await generateUniqueGroupCode();
       
@@ -23,25 +25,25 @@ describe('Group Code Utilities', () => {
 
     it('should retry if code already exists', async () => {
       // First call returns existing game, second returns null
-      (Game.findByGroupCode as jest.Mock)
+      (mockedGame.findByGroupCode as any) = jest.fn()
         .mockResolvedValueOnce({ groupCode: 'ABC123' })
         .mockResolvedValueOnce(null);
 
       const code = await generateUniqueGroupCode();
       
       expect(code).toHaveLength(6);
-      expect(Game.findByGroupCode).toHaveBeenCalledTimes(2);
+      expect(mockedGame.findByGroupCode).toHaveBeenCalledTimes(2);
     });
 
     it('should throw error after max attempts', async () => {
       // Always return existing game
-      (Game.findByGroupCode as jest.Mock).mockResolvedValue({ groupCode: 'EXISTS' });
+      (mockedGame.findByGroupCode as any) = jest.fn().mockResolvedValue({ groupCode: 'EXISTS' });
 
       await expect(generateUniqueGroupCode()).rejects.toThrow(
         'Failed to generate unique group code after maximum attempts'
       );
       
-      expect(Game.findByGroupCode).toHaveBeenCalledTimes(10);
+      expect(mockedGame.findByGroupCode).toHaveBeenCalledTimes(10);
     });
   });
 
