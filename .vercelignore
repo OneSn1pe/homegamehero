@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.npm/
+
+# Testing
+coverage/
+.nyc_output/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+__tests__/
+jest.config.js
+
+# Development
+.env.local
+.env.development
+.env.test
+*.log
+.DS_Store
+
+# Backend source (we'll use serverless functions instead)
+backend/src/
+backend/tests/
+backend/tsconfig.json
+backend/jest.config.js
+backend/.env*
+
+# Documentation
+*.md
+docs/
+
+# Git
+.git/
+.gitignore
+
+# Build artifacts
+dist/
+build/
+*.tsbuildinfo
