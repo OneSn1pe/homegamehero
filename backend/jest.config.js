@@ -3,7 +3,11 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  testMatch: [
+    '**/__tests__/**/*.test.ts',
+    '**/?(*.)+(spec|test).ts',
+    '!**/__tests__/setup/**'
+  ],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
@@ -15,4 +19,16 @@ module.exports = {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
+  // Setup and teardown
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup/jest.setup.ts'],
+  // Test timeout for integration tests
+  testTimeout: 30000,
+  // Force tests to run in serial for database tests
+  maxWorkers: 1,
+  // Clear mocks between tests
+  clearMocks: true,
+  // Restore mocks between tests
+  restoreMocks: true,
+  // Force exit after test completion
+  forceExit: true,
 };

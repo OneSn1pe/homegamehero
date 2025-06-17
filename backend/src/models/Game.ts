@@ -1,176 +1,177 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { IGame, IChipColor, IRebuy, IPlayer } from '../types/models';
 
-// Extend IGame with Mongoose Document properties
-export interface IGameDocument extends IGame, Document {
-  _id: string;
+export interface IGame {
+  code: string;
+  hostName: string;
+  buyIn: number;
+  chipValues: {
+    white: number;
+    red: number;
+    green: number;
+    black: number;
+    blue: number;
+  };
+  blindStructure: Array<{
+    level: number;
+    smallBlind: number;
+    bigBlind: number;
+    duration: number;
+  }>;
+  players: mongoose.Types.ObjectId[];
+  currentBlindLevel: number;
+  status: 'waiting' | 'active' | 'completed';
+  startTime?: Date;
+  endTime?: Date;
+  finalRankings?: Array<{
+    playerId: string;
+    position: number;
+    payout: number;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-// Sub-schemas
-const ChipColorSchema = new Schema<IChipColor>({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  value: {
+export interface IGameDocument extends IGame, Document {
+  _id: mongoose.Types.ObjectId;
+}
+
+const blindLevelSchema = new Schema({
+  level: {
     type: Number,
     required: true,
-    min: 0
-  }
-}, { _id: false });
-
-const RebuySchema = new Schema<IRebuy>({
-  playerName: {
-    type: String,
-    required: true,
-    trim: true
+    min: 1,
   },
-  amount: {
+  smallBlind: {
     type: Number,
     required: true,
-    min: 0
+    min: 0,
   },
-  chipsByColor: {
-    type: Map,
-    of: Number,
-    required: true
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now
-  }
-}, { _id: false });
-
-const PlayerSchema = new Schema<IPlayer>({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  initialChips: {
-    type: Map,
-    of: Number,
-    required: true
-  },
-  currentChips: {
-    type: Map,
-    of: Number,
-    required: true
-  },
-  totalBuyIn: {
+  bigBlind: {
     type: Number,
     required: true,
-    min: 0
-  }
+    min: 0,
+  },
+  duration: {
+    type: Number,
+    required: true,
+    min: 1,
+  },
 }, { _id: false });
 
-// Main Game schema
-const GameSchema = new Schema<IGameDocument>({
-  groupCode: {
+const finalRankingSchema = new Schema({
+  playerId: {
+    type: String,
+    required: true,
+  },
+  position: {
+    type: Number,
+    required: true,
+    min: 1,
+  },
+  payout: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+}, { _id: false });
+
+const gameSchema = new Schema<IGameDocument>({
+  code: {
     type: String,
     required: true,
     unique: true,
-    index: true,
-    minlength: 6,
-    maxlength: 6,
-    uppercase: true
+    length: 6,
+    uppercase: true,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
+  hostName: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 50,
+  },
+  buyIn: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  chipValues: {
+    white: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    red: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    green: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    black: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    blue: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+  },
+  blindStructure: {
+    type: [blindLevelSchema],
+    required: true,
+    validate: {
+      validator: function(levels: any[]) {
+        return levels.length > 0;
+      },
+      message: 'At least one blind level is required',
+    },
+  },
+  players: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Player',
+  }],
+  currentBlindLevel: {
+    type: Number,
+    required: true,
+    default: 0,
+    min: 0,
   },
   status: {
     type: String,
-    enum: ['setup', 'active', 'completed'],
-    default: 'setup',
-    required: true
-  },
-  leaderId: {
-    type: String,
-    required: true
-  },
-  chipConfig: {
-    colors: {
-      type: [ChipColorSchema],
-      required: true,
-      validate: {
-        validator: function(colors: IChipColor[]) {
-          return colors.length > 0;
-        },
-        message: 'At least one chip color must be configured'
-      }
-    }
-  },
-  financials: {
-    initialBuyIn: {
-      type: Number,
-      required: true,
-      min: 0
-    },
-    totalPot: {
-      type: Number,
-      required: true,
-      min: 0
-    },
-    rebuys: {
-      type: [RebuySchema],
-      default: []
-    }
-  },
-  players: {
-    type: [PlayerSchema],
+    enum: ['waiting', 'active', 'completed'],
+    default: 'waiting',
     required: true,
-    validate: {
-      validator: function(players: IPlayer[]) {
-        return players.length >= 2;
-      },
-      message: 'A game must have at least 2 players'
-    }
-  }
+  },
+  startTime: {
+    type: Date,
+  },
+  endTime: {
+    type: Date,
+  },
+  finalRankings: {
+    type: [finalRankingSchema],
+  },
 }, {
   timestamps: true,
-  toJSON: {
-    virtuals: true,
-    transform: function(doc, ret) {
-      ret.id = ret._id;
-      delete ret._id;
-      delete ret.__v;
-      return ret;
-    }
-  }
 });
 
 // Indexes
-GameSchema.index({ createdAt: 1 });
-GameSchema.index({ status: 1 });
+gameSchema.index({ status: 1, createdAt: -1 });
 
-// TTL index - automatically delete games after 30 days of completion
-GameSchema.index(
-  { createdAt: 1 },
+// TTL index - automatically delete completed games after 30 days
+gameSchema.index(
+  { endTime: 1 },
   { 
-    expireAfterSeconds: 30 * 24 * 60 * 60, // 30 days
+    expireAfterSeconds: 30 * 24 * 60 * 60,
     partialFilterExpression: { status: 'completed' }
   }
 );
 
-// Virtual for game age
-GameSchema.virtual('ageInDays').get(function() {
-  return Math.floor((Date.now() - this.createdAt.getTime()) / (1000 * 60 * 60 * 24));
-});
-
-// Methods
-GameSchema.methods.isExpired = function(): boolean {
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  return this.status === 'completed' && this.createdAt < thirtyDaysAgo;
-};
-
-// Statics
-GameSchema.statics.findByGroupCode = function(groupCode: string) {
-  return this.findOne({ groupCode: groupCode.toUpperCase() });
-};
-
-const Game = mongoose.model<IGameDocument>('Game', GameSchema);
+const Game = mongoose.model<IGameDocument>('Game', gameSchema);
 
 export default Game;

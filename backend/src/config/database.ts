@@ -3,7 +3,7 @@ import { logger } from '../utils/logger';
 
 const connectDatabase = async (): Promise<void> => {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/homegamehero';
+    const mongoUri = process.env['MONGODB_URI'] || 'mongodb://localhost:27017/homegamehero';
     
     await mongoose.connect(mongoUri, {
       // These options are no longer needed in Mongoose 6+

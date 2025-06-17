@@ -28,7 +28,7 @@ export const generateUniqueGroupCode = async (): Promise<string> => {
     const code = generateRandomCode();
     
     // Check if this code already exists
-    const existingGame = await Game.findByGroupCode(code);
+    const existingGame = await Game.findOne({ code });
     
     if (!existingGame) {
       return code;
